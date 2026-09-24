@@ -173,6 +173,7 @@ if exist "%INSTALL_DIR%\%EXE_NAME%" (
     echo Installation terminee !
     echo ==============================
     echo.
+    start "" "%INSTALL_DIR%\%EXE_NAME%"
 ) else (
     echo.
     echo Erreur : programme introuvable.
