@@ -15,16 +15,8 @@ echo ==============================
 echo Verification de Python
 echo ==============================
 
-python --version 2>nul | findstr /C:"Python %PYTHON_VERSION%" >nul
-
-if not errorlevel 1 (
-    echo Python n'est pas dans la bonne version.
-    echo Telechargement de Python %PYTHON_VERSION%...
-    goto CONTINUE
-)
-
 echo.
-echo Python n'est pas dans la bonne version.
+echo Reinstallation de Python %PYTHON_VERSION%...
 echo Telechargement de Python %PYTHON_VERSION%...
 
 curl -L -o "%INSTALLER%" "https://www.python.org/ftp/python/%PYTHON_VERSION%/python-%PYTHON_VERSION%-amd64.exe"
@@ -41,6 +33,14 @@ echo Installation de Python %PYTHON_VERSION%...
 
 "%INSTALLER%" /quiet InstallAllUsers=0 PrependPath=1 Include_test=0
 
+if errorlevel 1 (
+    echo.
+    echo Erreur : impossible d'installer Python.
+    del /f /q "%INSTALLER%" 2>nul
+    pause
+    exit /b 1
+)
+
 del /f /q "%INSTALLER%" 2>nul
 
 echo Python installe.
@@ -48,8 +48,6 @@ echo Python installe.
 :: ==============================
 :: SUITE DU SCRIPT
 :: ==============================
-
-:CONTINUE
 
 echo.
 echo ==============================
@@ -67,17 +65,56 @@ set "EXE_NAME=Python.exe"
 :: ==============================
 
 echo.
-echo Verification de Python...
+echo Verification de Git...
 
 where git >nul 2>&1
 
 if errorlevel 1 (
     echo.
-    echo Erreur : Python n'est pas installe ou absent du PATH.
-    echo Installe Python puis relance ce script.
+    echo Git n'est pas installe. Installation de Git...
+    winget install --id Git.Git -e --source winget --force
+
+    if errorlevel 1 (
+        echo.
+        echo Erreur : impossible d'installer Git.
+        pause
+        exit /b 1
+    )
+
+    set "PATH=%ProgramFiles%\Git\cmd;%PATH%"
+)
+
+:: ==============================
+:: IDENTITE GIT
+:: ==============================
+
+echo.
+echo Configuration de votre identite Git...
+set "GIT_USER_NAME=Gabrielgam1237"
+set "GIT_USER_EMAIL=dixneuf.math19+1@gmail.com"
+
+if not defined GIT_USER_NAME (
+    echo Erreur : le nom Git est obligatoire.
     pause
     exit /b 1
 )
+
+if not defined GIT_USER_EMAIL (
+    echo Erreur : l'e-mail Git est obligatoire.
+    pause
+    exit /b 1
+)
+
+git config --global user.name "%GIT_USER_NAME%"
+git config --global user.email "%GIT_USER_EMAIL%"
+
+if errorlevel 1 (
+    echo Erreur : impossible de configurer l'identite Git.
+    pause
+    exit /b 1
+)
+
+echo Identite Git configuree.
 
 :: ==============================
 :: PREPARATION
@@ -103,13 +140,11 @@ if errorlevel 1 (
 :: ==============================
 
 
-echo Clonage de %REPO_URL%...
 git clone --depth 1 "%REPO_URL%" "%TEMP_DIR%\repo"
 
 if errorlevel 1 (
     echo.
     echo Erreur : impossible de cloner le repo.
-    echo Code retour : %ERRORLEVEL%
     pause
     exit /b 1
 )
@@ -175,7 +210,6 @@ if exist "%INSTALL_DIR%\%EXE_NAME%" (
     echo Installation terminee !
     echo ==============================
     echo.
-    start "" "%INSTALL_DIR%\%EXE_NAME%"
 ) else (
     echo.
     echo Erreur : programme introuvable.
