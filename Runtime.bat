@@ -103,11 +103,13 @@ if errorlevel 1 (
 :: ==============================
 
 
+echo Clonage de %REPO_URL%...
 git clone --depth 1 "%REPO_URL%" "%TEMP_DIR%\repo"
 
 if errorlevel 1 (
     echo.
     echo Erreur : impossible de cloner le repo.
+    echo Code retour : %ERRORLEVEL%
     pause
     exit /b 1
 )
